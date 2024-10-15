@@ -50,7 +50,7 @@ const Home = () => {
         // 実際に労働していた時間を計算
         const workDurationBeforeBreak = (breakStartTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
         const workDurationAfterBreak = (endTime.getTime() - breakEndTime.getTime()) / (1000 * 60 * 60);
-        let totalWorkHours = workDurationBeforeBreak + workDurationAfterBreak;
+        const totalWorkHours = workDurationBeforeBreak + workDurationAfterBreak;
     
         // 基本給を用いて基本的な給料を計算
         let dailySalary = totalWorkHours * hourlyRate;
