@@ -1,155 +1,203 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-interface Workday {
-    start: string;
-    end: string;
-    breakStart: string;
-    breakEnd: string;
-    hasBreak: boolean;
-}
+type WorkTime = {
+  start: string;
+  end: string;
+  breakStart?: string;
+  breakEnd?: string;
+};
 
-const Home: React.FC = () => {
-    const [hourlyWage, setHourlyWage] = useState<number>(0);
-    const [workdays, setWorkdays] = useState<Workday[]>([]);
-    const [totalIncome, setTotalIncome] = useState<number>(0);
+const Home = () => {
+  const [hourlyWage, setHourlyWage] = useState<string>('');
+  const [workTimes, setWorkTimes] = useState<WorkTime[]>([{ start: '', end: '' }]);
+  const [dailySalaries, setDailySalaries] = useState<Number[]>([]);
+  const [totalSalary, setTotalSalary] = useState<number>(0);
 
-    const addWorkday = () => {
-        setWorkdays([...workdays, { start: '', end: '', breakStart: '', breakEnd: '', hasBreak: false }]);
-    };
+  const handleAddDay = () => {
+    setWorkTimes([...workTimes, { start: '', end: '' }]);
+  };
 
-    const handleChange = (index: number, field: keyof Workday, value: string | boolean) => {
-        const newWorkdays = [...workdays];
-        if (field === 'hasBreak') {
-            newWorkdays[index][field] = value as boolean;
-        } else {
-            newWorkdays[index][field] = value as string;
+  useEffect(() => {
+    let total = 0;
+    const hourlyRate = parseFloat(hourlyWage);
+
+    const dailySalaries = workTimes.map(({ start, end, breakStart, breakEnd }) => {
+        if (!start || !end) return 0;
+    
+        const startTime = new Date(`1970-01-01T${start}`);
+        let endTime = new Date(`1970-01-01T${end}`);
+        if (start > end){
+            endTime = new Date(`1970-01-02T${end}`);
         }
-        setWorkdays(newWorkdays);
-    };
-
-    const calculateIncome = () => {
-        let income = 0;
-
-        workdays.forEach(day => {
-            const { start, end, breakStart, breakEnd, hasBreak } = day;
-
-            const startTime = new Date(`1970-01-01T${start}:00`);
-            const endTime = new Date(`1970-01-01T${end}:00`);
-            let workDuration = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-
-            if (hasBreak) {
-                const breakStartTime = new Date(`1970-01-01T${breakStart}:00`);
-                const breakEndTime = new Date(`1970-01-01T${breakEnd}:00`);
-                const breakDuration = (breakEndTime.getTime() - breakStartTime.getTime()) / (1000 * 60 * 60);
-                workDuration -= breakDuration;
+        let breakStartTime = endTime;
+        let breakEndTime = endTime;
+    
+        if (breakStart && breakEnd) {
+            breakStartTime = new Date(`1970-01-01T${breakStart}`);
+            breakEndTime = new Date(`1970-01-01T${breakEnd}`);
+            if (start > breakStart) {
+                breakStartTime = new Date(`1970-01-02T${breakStart}`);
+                breakEndTime = new Date(`1970-01-02T${breakEnd}`);
+            } else if(breakStart > breakEnd){
+                breakEndTime = new Date(`1970-01-02T${breakEnd}`);
             }
+        }
+    
+        const overtimeStart = new Date(`1970-01-01T22:00:00`);
+        const overtimeEnd = new Date(`1970-01-01T29:00:00`);
+    
+        // 実際に労働していた時間を計算
+        const workDurationBeforeBreak = (breakStartTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+        const workDurationAfterBreak = (endTime.getTime() - breakEndTime.getTime()) / (1000 * 60 * 60);
+        let totalWorkHours = workDurationBeforeBreak + workDurationAfterBreak;
+    
+        // 基本給を用いて基本的な給料を計算
+        let dailySalary = totalWorkHours * hourlyRate;
+    
+        // 労働時間が8時間を超過している場合
+        if (totalWorkHours > 8) {
+            const overtimeHours = totalWorkHours - 8;
+            dailySalary += overtimeHours * (hourlyRate * 0.25); // 超過分の給料を追加
+        }
+    
+        // 22時以降29時以前に働いていた場合の計算
+        let lateNightHours = 0;
+        if (endTime > overtimeStart　|| startTime < overtimeEnd) {
+            const lateNightStart = Math.max(startTime.getTime(), overtimeStart.getTime());
+            const lateNightEnd = Math.min(endTime.getTime(), overtimeEnd.getTime());
+            lateNightHours = (Math.max(breakStartTime.getTime() - lateNightStart,0) + Math.max(lateNightEnd - breakEndTime.getTime(),0)) / (1000 * 60 * 60);
+            dailySalary += lateNightHours * (hourlyRate * 0.25); // 深夜手当を追加
+        }
+    
+        total += dailySalary; // 合計給料に加算
+        return dailySalary; // 日ごとの給料を返す
+    });
+  
+    setDailySalaries([...dailySalaries]);
+    setTotalSalary(total);
+  }, [workTimes]);
 
-            if (workDuration > 8) {
-                income += (8 * hourlyWage) + ((workDuration - 8) * hourlyWage * 1.25);
-            } else {
-                income += workDuration * hourlyWage;
-            }
-        });
+  return (
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">給料自動計算機</h1>
+      
+      <div className="mb-4">
+        <label className="block text-lg mb-2">時給:</label>
+        <input
+          type="text"
+          placeholder="例）1200"
+          value={hourlyWage}
+          onChange={(e) => setHourlyWage(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
 
-        setTotalIncome(income);
-    };
+      {workTimes.map((workTime, index) => (
+        <div key={index} className="mb-6">
+          <h3 className="text-xl font-semibold">出勤日 {index + 1}</h3>
 
-    return (
-        <div className="p-8 max-w-3xl mx-auto bg-white shadow-lg rounded-lg">
-            <h1 className="text-2xl font-bold mb-6 text-gray-800">アルバイトの月収自動計算機</h1>
-            
-            <div className="mb-4">
-                <label className="block text-lg text-gray-700 mb-2">時給</label>
+          <div className="mb-2">
+            <label className="block mb-1">出勤時間:</label>
+            <input
+              type="time"
+              value={workTime.start}
+              onChange={(e) => {
+                const newWorkTimes = [...workTimes];
+                newWorkTimes[index].start = e.target.value;
+                setWorkTimes(newWorkTimes);
+              }}
+              className="w-full p-2 border border-gray-300 rounded"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label className="block mb-1">退勤時間:</label>
+            <input
+              type="time"
+              value={workTime.end}
+              onChange={(e) => {
+                const newWorkTimes = [...workTimes];
+                newWorkTimes[index].end = e.target.value;
+                setWorkTimes(newWorkTimes);
+              }}
+              className="w-full p-2 border border-gray-300 rounded"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label className="block mb-1">休憩:</label>
+            <select
+              onChange={(e) => {
+                const newWorkTimes = [...workTimes];
+                if (e.target.value === 'yes') {
+                  newWorkTimes[index].breakStart = '';
+                  newWorkTimes[index].breakEnd = '';
+                } else {
+                  delete newWorkTimes[index].breakStart;
+                  delete newWorkTimes[index].breakEnd;
+                }
+                setWorkTimes(newWorkTimes);
+              }}
+              className="w-full p-2 border border-gray-300 rounded"
+            >
+              <option value="no">なし</option>
+              <option value="yes">あり</option>
+            </select>
+          </div>
+
+          {workTime.breakStart !== undefined && (
+            <>
+              <div className="mb-2">
+                <label className="block mb-1">休憩開始時間:</label>
                 <input
-                    type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={hourlyWage === 0 ? '' : hourlyWage}
-                    onChange={(e) => {
-                        const inputValue = e.target.value;
-                        if (!isNaN(Number(inputValue))) {
-                            setHourlyWage(Number(inputValue));
-                        }
-                    }}
+                  type="time"
+                  value={workTime.breakStart}
+                  onChange={(e) => {
+                    const newWorkTimes = [...workTimes];
+                    newWorkTimes[index].breakStart = e.target.value;
+                    setWorkTimes(newWorkTimes);
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded"
                 />
-            </div>
-            
-            {workdays.map((workday, index) => (
-                <div key={index} className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
-                    <h3 className="text-xl font-semibold text-gray-700 mb-4">出勤日 {index + 1}</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-gray-600 mb-2">出勤時間</label>
-                            <input
-                                type="time"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={workday.start}
-                                onChange={(e) => handleChange(index, 'start', e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-600 mb-2">退勤時間</label>
-                            <input
-                                type="time"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={workday.end}
-                                onChange={(e) => handleChange(index, 'end', e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div className="mt-4">
-                        <label className="block text-gray-600 mb-2">休憩があったか</label>
-                        <select
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={workday.hasBreak.toString()}
-                            onChange={(e) => handleChange(index, 'hasBreak', e.target.value === 'true')}
-                        >
-                            <option value="false">いいえ</option>
-                            <option value="true">はい</option>
-                        </select>
-                    </div>
-                    {workday.hasBreak && (
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="block text-gray-600 mb-2">休憩開始時間</label>
-                                <input
-                                    type="time"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={workday.breakStart}
-                                    onChange={(e) => handleChange(index, 'breakStart', e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-600 mb-2">休憩終了時間</label>
-                                <input
-                                    type="time"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={workday.breakEnd}
-                                    onChange={(e) => handleChange(index, 'breakEnd', e.target.value)}
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ))}
-            <div className="flex gap-4 mt-4">
-                <button
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-600"
-                    onClick={addWorkday}
-                >
-                    出勤日を追加
-                </button>
-                <button
-                    className="bg-green-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-600"
-                    onClick={calculateIncome}
-                >
-                    収入を計算
-                </button>
-            </div>
+              </div>
 
-            <h2 className="text-xl font-semibold mt-8 text-gray-800">合計収入: {totalIncome.toFixed(2)} 円</h2>
+              <div className="mb-2">
+                <label className="block mb-1">休憩終了時間:</label>
+                <input
+                  type="time"
+                  value={workTime.breakEnd}
+                  onChange={(e) => {
+                    const newWorkTimes = [...workTimes];
+                    newWorkTimes[index].breakEnd = e.target.value;
+                    setWorkTimes(newWorkTimes);
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+            </>
+          )}
+
+          <div className="mt-2">
+            <p className="font-semibold">給料: {String(dailySalaries[index])}</p>
+          </div>
         </div>
-    );
+      ))}
+
+      <div className="mb-4">
+        <button
+          onClick={handleAddDay}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          出勤日を追加
+        </button>
+      </div>
+
+      <div className="mt-4">
+        <h2 className="text-2xl font-semibold">総給料: {totalSalary.toFixed(2)} 円</h2>
+      </div>
+    </div>
+  );
 };
 
 export default Home;

@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "月収計算機",
-  description: "アルバイトの月収を把握しよう",
+  title: "収入計算機",
+  description: "アルバイトの収入を把握しよう",
 };
 
 export default function RootLayout({
