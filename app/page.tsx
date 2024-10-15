@@ -11,7 +11,7 @@ type WorkTime = {
 const Home = () => {
   const [hourlyWage, setHourlyWage] = useState<string>('');
   const [workTimes, setWorkTimes] = useState<WorkTime[]>([{ start: '', end: '' }]);
-  const [dailySalaries, setDailySalaries] = useState<Number[]>([]);
+  const [dailySalaries, setDailySalaries] = useState<number[]>([]);
   const [totalSalary, setTotalSalary] = useState<number>(0);
 
   const handleAddDay = () => {
