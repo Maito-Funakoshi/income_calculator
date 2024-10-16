@@ -14,7 +14,6 @@ export default function Home() {
   const [workTimes, setWorkTimes] = useState<WorkTime[]>([{ start: '', end: '' }]);
   const [dailySalaries, setDailySalaries] = useState<number[]>([]);
   const [totalSalary, setTotalSalary] = useState<number>(0);
-  let totalWorkHours;
 
   const handleAddDay = () => {
     setWorkTimes([...workTimes, { start: '', end: '' }]);
@@ -151,7 +150,7 @@ export default function Home() {
     setDailySalaries([...dailySalaries]);
     setTotalSalary(total);
   }, [workTimes]);
-  totalWorkHours = workTimes.reduce((acc, workTime) => acc + (workTime.income || 0), 0);
+  const totalWorkHours = workTimes.reduce((acc, workTime) => acc + (workTime.income || 0), 0);
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
