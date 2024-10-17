@@ -68,76 +68,89 @@ export default function Home() {
             overtimeHours = totalWorkHours - 8;
             dailySalary += overtimeHours * (hourlyRate * 0.25);
         }
-    
-        let earlyHours = 0;
-        let lateHours = 0;
-        // 日を跨いでいない場合
+
+        let nightHours = 0;
+        //休憩がないとして計算
+
+        //日を跨いでいない場合
         if (et < daysecond) {
-          //早朝に出勤した場合
+          //出勤時間が5時より前の場合
           if (st < oe - daysecond) {
-            //5時以降に休憩に入った場合
-            if (oe - daysecond < bst) {
-              earlyHours += ((oe - daysecond) - st) / (1000 * 60 * 60);
-            }
-            else {
-              earlyHours += (bst - st + Math.max(oe - daysecond - bet,0)) / (1000 * 60 * 60);
+            nightHours += (Math.min(oe - daysecond,et) - st) / (1000 * 60 * 60);
+            //退勤時間が22時より後の場合
+            if (os < et) {
+              nightHours += (et - os) / (1000 * 60 * 60);
             }
           }
-          //深夜に退勤した場合
-          if (os < et) {
-            //22時以前に休憩を上った場合
-            if (bet < os) {
-              lateHours += (et - os) / (1000 * 60 * 60);
-            }
-            else {
-              lateHours += (et - bet + Math.max(bst - os,0)) / (1000 * 60 * 60);
-            }
+          //出勤時間が5時〜22時の場合
+          else if (st < os) {
+            nightHours += Math.max(et - os,0) / (1000 * 60 * 60);
           }
-        } else {
-          //早朝に出勤した場合
-          if (st < oe - daysecond) {
-            //5時以降に休憩に入った場合
-            if (oe - daysecond < bst) {
-              earlyHours += ((oe - daysecond) - st) / (1000 * 60 * 60);
-              //22時以前に休憩に入った場合
-              if (bst < os) {
-                lateHours += (et - Math.max(bet,os)) / (1000 * 60 * 60);
-              } else {
-                lateHours += (bst - os + et - bet) / (1000 * 60 * 60);
-              }
-            } else {
-              earlyHours += (bst - st + Math.max((oe - daysecond) - bet,0)) / (1000 * 60 * 60);
-              lateHours += (et - Math.max(bet,os)) / (1000 * 60 * 60);
-            }
-          } else {
-            //22時以前に出勤した場合
-            if (st < os) {
-              //22時以前に休憩に入った場合
-              if (bst < os) {
-                lateHours += (Math.min(oe,et) - Math.max(os,bet)) / (1000 * 60 * 60);
-              } else {
-                lateHours += (bst - os + Math.min(oe,et) - bet) / (1000 * 60 * 60);
-              }
-            } else {
-              //5時以前に休憩に入った場合
-              if (bst < oe) {
-                lateHours += (bst - st) / (1000 * 60 * 60);
-                //5時以前に退勤した場合
-                if (et < oe) {
-                  lateHours += (et - bet) / (1000 * 60 * 60);
-                }
-                else {
-                  lateHours += Math.max(oe - bet,0) / (1000 * 60 * 60);
-                  //22時以降に退勤した場合
-                  if (os + daysecond < et) {
-                    lateHours += (et - Math.max(os + daysecond,bet)) / (1000 * 60 * 60);
-                  }
-                }
-              }
-            }
+          //出勤時間が22時より後の場合
+          else {
+            nightHours += (et - st) / (1000 * 60 * 60);
           }
         }
-        dailySalary += (earlyHours + lateHours) * (hourlyRate * 0.25);
+        //日を跨ぐ場合
+        else {
+          //出勤時間が5時より前の場合
+          if (st < oe - daysecond) {
+            nightHours += ((oe - daysecond) - st) / (1000 * 60 * 60);
+            nightHours += (et - os) / (1000 * 60 * 60);
+          }
+          //出勤時間が5時〜22時の場合
+          else if (st < os) {
+            nightHours += (Math.min(oe,et) - os) / (1000 * 60 * 60);
+          }
+          //出勤時間が22時より後の場合
+          else {
+            nightHours += (Math.min(oe, et) - st) / (1000 * 60 * 60);
+            nightHours += (Math.max(et - (os + daysecond),0)) / (1000 * 60 * 60);
+          }
+        }
+        //休憩分を引く
+
+        //日を跨いでいない場合
+        if (bet < daysecond) {
+          //休憩開始時間が5時より前の場合
+          if (bst < oe - daysecond) {
+            nightHours -= (Math.min(oe - daysecond,bet) - bst) / (1000 * 60 * 60);
+            //休憩終了時間が22時より後の場合
+            if (os < bet) {
+              nightHours -= (bet - os) / (1000 * 60 * 60);
+            }
+          }
+          //休憩開始時間が5時〜22時の場合
+          else if (bst < os) {
+            nightHours -= Math.max(bet - os,0) / (1000 * 60 * 60);
+          }
+          //休憩開始時間が22時より後の場合
+          else {
+            nightHours -= (bet - bst) / (1000 * 60 * 60);
+          }
+        }
+        //日を跨ぐ場合
+        else {
+          //休憩開始時間が5時より前の場合
+          if (bst < oe - daysecond) {
+            nightHours -= ((oe - daysecond) - bst) / (1000 * 60 * 60);
+            nightHours -= (bet - os) / (1000 * 60 * 60);
+          }
+          //休憩開始時間が5時〜22時の場合
+          else if (bst < os) {
+            nightHours -= (Math.min(oe,bet) - os) / (1000 * 60 * 60);
+          }
+          //休憩開始時間が22時〜29時の場合
+          else if (bst < oe) {
+            nightHours -= (Math.min(oe, bet) - bst) / (1000 * 60 * 60);
+            nightHours -= (Math.max(bet - (os + daysecond),0)) / (1000 * 60 * 60);
+          }
+          //休憩開始時間が29時より後の場合
+          else {
+            nightHours -= Math.max(bet - (os + daysecond),0) / (1000 * 60 * 60);
+          }
+        }
+        dailySalary += nightHours * (hourlyRate * 0.25);
     
         total += dailySalary;
         return dailySalary;
