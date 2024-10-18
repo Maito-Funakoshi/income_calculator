@@ -275,14 +275,14 @@ export default function Home() {
         ))}
       </div>
   
-      <div className="flex items-center justify-between mt-6">
+      <div className="flex flex-col md:flex-row items-center justify-between mt-6 text-center space-y-4 md:space-y-0">
         <button
           onClick={handleAddDay}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           出勤日を追加
         </button>
-  
+
         <h2 className="text-2xl font-semibold">出勤日数: {workTimes.length} 日</h2>
 
         <h2 className="text-2xl font-semibold">総労働時間: {Math.round(totalWorkHours)} 時間</h2>
