@@ -40,8 +40,6 @@ export default function Home() {
     if (storedWorkTimes) {
       setWorkTimes(JSON.parse(storedWorkTimes));
     }
-    console.log("storedWage: " + storedWage);
-    console.log("storedWorkTimes: " + storedWorkTimes);
   }, []);
 
   useEffect(() => {
