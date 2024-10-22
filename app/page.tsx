@@ -257,7 +257,7 @@ export default function Home() {
                   }
                   setWorkTimes(newWorkTimes);
                 }}
-                id="rest"
+                id={`rest-${index}`}
                 className="w-1/4 p-2 border border-gray-300 rounded"
               >
                 <option value="no">なし</option>
