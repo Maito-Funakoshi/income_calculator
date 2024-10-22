@@ -203,6 +203,7 @@ export default function Home() {
             setHourlyWage(e.target.value)
             localStorage.setItem("hourlyWage", e.target.value);
           }}
+          id="hourlyWage"
           className="w-1/4 p-2 border border-gray-300 rounded text-center"
         />
         <span className="ml-2 text-lg">円</span>
@@ -215,7 +216,7 @@ export default function Home() {
             
             <div className="flex gap-4 mb-2">
               <div className="flex-1">
-                <label className="block text-sm font-medium mb-1">出勤時間</label>
+                <div className="block text-sm font-medium mb-1">出勤時間</div>
                 <input
                   type="time"
                   value={workTime.start}
@@ -228,7 +229,7 @@ export default function Home() {
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium mb-1">退勤時間</label>
+                <div className="block text-sm font-medium mb-1">退勤時間</div>
                 <input
                   type="time"
                   value={workTime.end}
@@ -243,7 +244,7 @@ export default function Home() {
             </div>
   
             <div className="mb-2">
-              <label className="block text-sm font-medium mb-1">休憩</label>
+              <div className="block text-sm font-medium mb-1">休憩</div>
               <select
                 onChange={(e) => {
                   const newWorkTimes = [...workTimes];
@@ -256,6 +257,7 @@ export default function Home() {
                   }
                   setWorkTimes(newWorkTimes);
                 }}
+                id="rest"
                 className="w-1/4 p-2 border border-gray-300 rounded"
               >
                 <option value="no">なし</option>
@@ -266,7 +268,7 @@ export default function Home() {
             {workTime.breakStart !== undefined && (
               <div className="flex gap-4 mb-2">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">休憩開始時間</label>
+                  <div className="block text-sm font-medium mb-1">休憩開始時間</div>
                   <input
                     type="time"
                     value={workTime.breakStart}
@@ -280,7 +282,7 @@ export default function Home() {
                 </div>
   
                 <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1">休憩終了時間</label>
+                  <div className="block text-sm font-medium mb-1">休憩終了時間</div>
                   <input
                     type="time"
                     value={workTime.breakEnd}
