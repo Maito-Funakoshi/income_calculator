@@ -6,7 +6,7 @@ type WorkTime = {
   end: string;
   breakStart?: string;
   breakEnd?: string;
-  income?: number;
+  hour?: number;
 };
 
 export default function Home() {
@@ -18,6 +18,31 @@ export default function Home() {
   const handleAddDay = () => {
     setWorkTimes([...workTimes, { start: '', end: '' }]);
   };
+
+  const handleDeleteData = () => {
+    const userConfirmed = confirm("すべての出勤日の履歴を消して良いですか?");
+  
+    if (userConfirmed) {
+      localStorage.removeItem("hourlyWage");
+      localStorage.removeItem("workTimes");
+
+      setHourlyWage("");
+      setWorkTimes([{ start: '', end: '' }]);
+    } 
+  }
+
+  useEffect(() => {
+    const storedWage = localStorage.getItem("hourlyWage");
+    const storedWorkTimes = localStorage.getItem("workTimes");
+    if (storedWage) {
+      setHourlyWage(storedWage);
+    }
+    if (storedWorkTimes) {
+      setWorkTimes(JSON.parse(storedWorkTimes));
+    }
+    console.log("storedWage: " + storedWage);
+    console.log("storedWorkTimes: " + storedWorkTimes);
+  }, []);
 
   useEffect(() => {
     let total = 0;
@@ -59,7 +84,7 @@ export default function Home() {
         const oe = overtimeEnd.getTime() + jst;
     
         const totalWorkHours = (et - bet + bst - st) / (1000 * 60 * 60);
-        newWorkTimes[index].income = totalWorkHours;
+        newWorkTimes[index].hour = totalWorkHours;
     
         let dailySalary = totalWorkHours * hourlyRate;
 
@@ -160,10 +185,11 @@ export default function Home() {
     if (JSON.stringify(newWorkTimes) !== JSON.stringify(workTimes)) {
         setWorkTimes(newWorkTimes);
     }
+    localStorage.setItem("workTimes", JSON.stringify(workTimes));
     setDailySalaries([...dailySalaries]);
     setTotalSalary(total);
   }, [workTimes]);
-  const totalWorkHours = workTimes.reduce((acc, workTime) => acc + (workTime.income || 0), 0);
+  const totalWorkHours = workTimes.reduce((acc, workTime) => acc + (workTime.hour || 0), 0);
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -175,7 +201,10 @@ export default function Home() {
           type="text"
           placeholder="例) 1200"
           value={hourlyWage}
-          onChange={(e) => setHourlyWage(e.target.value)}
+          onChange={(e) => {
+            setHourlyWage(e.target.value)
+            localStorage.setItem("hourlyWage", e.target.value);
+          }}
           className="w-1/4 p-2 border border-gray-300 rounded text-center"
         />
         <span className="ml-2 text-lg">円</span>
@@ -275,19 +304,36 @@ export default function Home() {
         ))}
       </div>
   
-      <div className="flex flex-col md:flex-row items-center justify-between mt-6 text-center space-y-4 md:space-y-0">
-        <button
-          onClick={handleAddDay}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          出勤日を追加
-        </button>
+      <div className="p-6 bg-white shadow-lg rounded-lg">
+        <div className="flex md:flex-row justify-center gap-24">
+          <button
+            onClick={handleAddDay}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            出勤日を追加
+          </button>
+          <button
+            onClick={handleDeleteData}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+          >
+            履歴を削除
+          </button>
+        </div>
 
-        <h2 className="text-2xl font-semibold">出勤日数: {workTimes.length} 日</h2>
-
-        <h2 className="text-2xl font-semibold">総労働時間: {Math.round(totalWorkHours)} 時間</h2>
-
-        <h2 className="text-2xl font-semibold">月収: {Math.round(totalSalary)} 円</h2>
+        <div className="flex flex-col md:flex-row items-center justify-between mt-8 text-center space-y-6 md:space-y-0">
+          <div className="bg-gray-100 p-4 rounded-lg shadow-md w-full md:w-auto">
+            <h2 className="text-xl font-semibold text-gray-700">出勤日数</h2>
+            <p className="text-2xl font-bold text-blue-500">{workTimes.length} 日</p>
+          </div>
+          <div className="bg-gray-100 p-4 rounded-lg shadow-md w-full md:w-auto">
+            <h2 className="text-xl font-semibold text-gray-700">総労働時間</h2>
+            <p className="text-2xl font-bold text-blue-500">{Math.round(totalWorkHours)} 時間</p>
+          </div>
+          <div className="bg-gray-100 p-4 rounded-lg shadow-md w-full md:w-auto">
+            <h2 className="text-xl font-semibold text-gray-700">月収</h2>
+            <p className="text-2xl font-bold text-blue-500">{Math.round(totalSalary)} 円</p>
+          </div>
+        </div>
       </div>
     </div>
   );
