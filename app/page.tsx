@@ -348,7 +348,7 @@ const Camera = () => {
   const [photo, setPhoto] = useState<string | null>(null)
 
   useEffect(() => {
-    const constraints = { video: { facingMode: "environment" }}
+    const constraints = { video: { facingMode: "user" }}
     navigator.mediaDevices.getUserMedia(constraints)
       .then(stream => {
         if(refVideo?.current) {
