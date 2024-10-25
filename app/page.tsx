@@ -132,6 +132,7 @@ export default function Home() {
           }
         }
         //休憩分を引く
+        //ここにテスト用のコメントアウトを追加
 
         //日を跨いでいない場合
         if (bet < daysecond) {
