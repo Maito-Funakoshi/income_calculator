@@ -34,9 +34,8 @@ export default function Home() {
       "給料": dailySalaries[index] || 0,
     }));
 
-    // 合計給料を追加
     data.push({
-      "出勤日": "Total",
+      "出勤日": "合計",
       "出勤時間": "",
       "退勤時間": "",
       "休憩開始時間": "",
@@ -44,12 +43,17 @@ export default function Home() {
       "労働時間": "",
       "給料": totalSalary,
     });
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const fileName = `${year}年${month}月の給料.xlsx`;
   
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "WorkTimes");
   
-    XLSX.writeFile(workbook, "今月の給料.xlsx");
+    XLSX.writeFile(workbook, fileName);
   };
 
   const handleDeleteData = () => {
