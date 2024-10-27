@@ -25,7 +25,7 @@ export default function Home() {
     const workTimesData = storedWorkTimes ? JSON.parse(storedWorkTimes) : [];
   
     const data = workTimesData.map((workTime: WorkTime, index: number) => ({
-      "出勤日": `出勤日 ${index + 1}`,
+      "出勤日": `${index + 1}`,
       "出勤時間": workTime.start,
       "退勤時間": workTime.end,
       "休憩開始時間": workTime.breakStart || '',
@@ -33,6 +33,17 @@ export default function Home() {
       "労働時間": workTime.hour || 0,
       "給料": dailySalaries[index] || 0,
     }));
+
+    // 合計給料を追加
+    data.push({
+      "出勤日": "Total",
+      "出勤時間": "",
+      "退勤時間": "",
+      "休憩開始時間": "",
+      "休憩終了時間": "",
+      "労働時間": "",
+      "給料": totalSalary,
+    });
   
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
