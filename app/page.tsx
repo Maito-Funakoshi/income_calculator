@@ -20,6 +20,27 @@ export default function Home() {
     setWorkTimes([...workTimes, { start: '', end: '' }]);
   };
 
+  const handleExportToExcel = () => {
+    const storedWorkTimes = localStorage.getItem("workTimes");
+    const workTimesData = storedWorkTimes ? JSON.parse(storedWorkTimes) : [];
+  
+    const data = workTimesData.map((workTime: WorkTime, index: number) => ({
+      "Day": `出勤日 ${index + 1}`,
+      "Start Time": workTime.start,
+      "End Time": workTime.end,
+      "Break Start": workTime.breakStart || '',
+      "Break End": workTime.breakEnd || '',
+      "Total Hours": workTime.hour || 0,
+      "Daily Salary": dailySalaries[index] || 0,
+    }));
+  
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "WorkTimes");
+  
+    XLSX.writeFile(workbook, "WorkTimes.xlsx");
+  };
+
   const handleDeleteData = () => {
     const userConfirmed = confirm("すべての出勤日の履歴を消して良いですか?");
   
@@ -31,16 +52,6 @@ export default function Home() {
       setWorkTimes([{ start: '', end: '' }]);
     } 
   }
-
-  const exportToExcel = () => {
-    const workTimes = JSON.parse(localStorage.getItem("workTimes") || "[]");
-  
-    const worksheet = XLSX.utils.json_to_sheet(workTimes);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "WorkTimes");
-  
-    XLSX.writeFile(workbook, "workTimes.xlsx");
-  };
 
   useEffect(() => {
     const storedWage = localStorage.getItem("hourlyWage");
@@ -324,16 +335,16 @@ export default function Home() {
             出勤日を追加
           </button>
           <button
+            onClick={handleExportToExcel}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            記録を出力
+          </button>
+          <button
             onClick={handleDeleteData}
             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
           >
             履歴を削除
-          </button>
-          <button
-            onClick={exportToExcel}
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-          >
-            出力
           </button>
         </div>
 
