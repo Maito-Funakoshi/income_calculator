@@ -25,20 +25,20 @@ export default function Home() {
     const workTimesData = storedWorkTimes ? JSON.parse(storedWorkTimes) : [];
   
     const data = workTimesData.map((workTime: WorkTime, index: number) => ({
-      "Day": `出勤日 ${index + 1}`,
-      "Start Time": workTime.start,
-      "End Time": workTime.end,
-      "Break Start": workTime.breakStart || '',
-      "Break End": workTime.breakEnd || '',
-      "Total Hours": workTime.hour || 0,
-      "Daily Salary": dailySalaries[index] || 0,
+      "出勤日": `出勤日 ${index + 1}`,
+      "出勤時間": workTime.start,
+      "退勤時間": workTime.end,
+      "休憩開始時間": workTime.breakStart || '',
+      "休憩終了時間": workTime.breakEnd || '',
+      "労働時間": workTime.hour || 0,
+      "給料": dailySalaries[index] || 0,
     }));
   
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "WorkTimes");
   
-    XLSX.writeFile(workbook, "WorkTimes.xlsx");
+    XLSX.writeFile(workbook, "今月の給料.xlsx");
   };
 
   const handleDeleteData = () => {
