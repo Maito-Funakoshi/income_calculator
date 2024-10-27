@@ -40,7 +40,7 @@ export default function Home() {
       "退勤時間": "",
       "休憩開始時間": "",
       "休憩終了時間": "",
-      "労働時間": "",
+      "労働時間": workTimes.reduce((acc, workTime) => acc + (workTime.hour || 0), 0),
       "給料": totalSalary,
     });
 
