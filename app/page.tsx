@@ -342,7 +342,7 @@ export default function Home() {
       </div>
   
       <div className="p-6 bg-white shadow-lg rounded-lg">
-        <div className="flex flex-col md:flex-row justify-center md:gap-24">
+        <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-24">
           <button
             onClick={handleAddDay}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
