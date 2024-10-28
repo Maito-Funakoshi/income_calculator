@@ -48,12 +48,16 @@ export default function Home() {
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
     const fileName = prompt("ダウンロードするファイルの名前を入力してください", `${year}年${month}月の給料`);
+    if (!fileName) {
+        alert("ファイル名が入力されていません。");
+        return;
+    }
   
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "WorkTimes");
   
-    XLSX.writeFile(workbook, fileName);
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
   };
 
   const handleDeleteData = () => {
