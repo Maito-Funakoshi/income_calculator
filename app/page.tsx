@@ -47,7 +47,7 @@ export default function Home() {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
-    const fileName = `${year}年${month}月の給料.xlsx`;
+    const fileName = prompt("ダウンロードするファイルの名前を入力してください", `${year}年${month}月の給料`);
   
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
